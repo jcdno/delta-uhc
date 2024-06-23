@@ -12,6 +12,5 @@ rootProject.name = 'anmelden'
 /** Include all submodules */
 include (
     'common',
-    'velocity',
     'bukkit'
 )

@@ -1,40 +1,41 @@
 plugins {
-    id 'io.freefair.lombok' version '6.3.0'
-    id 'kr.entree.spigradle' version '2.4.3'
+    id 'io.freefair.lombok' version '8.6'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
-archivesBaseName = 'monad-uhc'
+archivesBaseName = 'delta-uhc'
+version  = "${date()}.${branch()}(${hash()})"
+
+sourceCompatibility = JavaLanguageVersion.of(21)
+targetCompatibility = JavaLanguageVersion.of(21)
 
 repositories {
     mavenCentral()
-    jitpack()
     maven { url 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'}
+    maven { url = 'https://oss.sonatype.org/content/repositories/central' }
 }
 
 ext {
     versions = [
-        paper: '1.19.4',
-        cloudPaper: '1.8.3',
-        adventureTextMinimessage: '4.13.0'
+        paper: '1.21',
+        incendoCloudSpigot: '1.8.4',
+        adventureTextMinimessage: '4.17.0'
     ]
 }
 
 dependencies {
     /** Import PaperMC */
-    compileOnly paper(versions.paper)
+    compileOnly("io.papermc.paper:paper-api:${versions.paper}-R0.1-SNAPSHOT")
     /**Import incendo/cloud*/
-    implementation "cloud.commandframework:cloud-core:${versions.cloudPaper}"
-    implementation "cloud.commandframework:cloud-annotations:${versions.cloudPaper}"
-    implementation "cloud.commandframework:cloud-minecraft-extras:${versions.cloudPaper}"
-    annotationProcessor "cloud.commandframework:cloud-annotations:${versions.cloudPaper}"
-    implementation "cloud.commandframework:cloud-brigadier:${versions.cloudPaper}"
-    implementation "cloud.commandframework:cloud-paper:${versions.cloudPaper}"
+    implementation "cloud.commandframework:cloud-core:${versions.incendoCloudSpigot}"
+    implementation "cloud.commandframework:cloud-annotations:${versions.incendoCloudSpigot}"
+    implementation "cloud.commandframework:cloud-minecraft-extras:${versions.incendoCloudSpigot}"
+    annotationProcessor "cloud.commandframework:cloud-annotations:${versions.incendoCloudSpigot}"
+    implementation "cloud.commandframework:cloud-brigadier:${versions.incendoCloudSpigot}"
+    implementation "cloud.commandframework:cloud-bukkit:${versions.incendoCloudSpigot}"
     /** Import Minimessage */
     implementation "net.kyori:adventure-text-minimessage:${versions.adventureTextMinimessage}"
-    /** Import reflections */
-    implementation 'org.reflections:reflections:0.10.2'
-    /** Import Mockbukkit */
 
     // Test dependencies
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
@@ -66,18 +67,6 @@ def hash() {
         standardOutput = stdout
     }
     stdout.toString().trim()
-}
-
-spigot {
-    authors 'jcedeno'
-    apiVersion '1.19'
-    version "${branch()}-${date()} (${hash()})"
-    name 'monad-uhc'
-    load STARTUP
-}
-
-shadowJar {
-    relocate 'fr.mrmicky', 'us.jcedeno.anmelden.shadded.fr.mrmicky'
 }
 
 build.dependsOn shadowJar
