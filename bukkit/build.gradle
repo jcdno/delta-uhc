@@ -20,7 +20,8 @@ ext {
     versions = [
         paper: '1.21',
         incendoCloudSpigot: '1.8.4',
-        adventureTextMinimessage: '4.17.0'
+        adventureTextMinimessage: '4.17.0',
+        fastboard: '2.1.2'
     ]
 }
 
@@ -36,6 +37,7 @@ dependencies {
     implementation "cloud.commandframework:cloud-bukkit:${versions.incendoCloudSpigot}"
     /** Import Minimessage */
     implementation "net.kyori:adventure-text-minimessage:${versions.adventureTextMinimessage}"
+    implementation "fr.mrmicky:fastboard:${versions.fastboard}"
 
     // Test dependencies
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'

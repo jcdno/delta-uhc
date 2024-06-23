@@ -2,3 +2,4 @@ name: delta-uhc
 version: 1.0.0
 description: An empty example plugin for Spigot with Gradle
 main: us.jcedeno.deltauhc.bukkit.DeltaUHC
+api-version: 1.21

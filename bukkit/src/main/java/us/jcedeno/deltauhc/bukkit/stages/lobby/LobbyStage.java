@@ -17,17 +17,16 @@ import org.bukkit.scheduler.BukkitTask;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import us.jcedeno.deltauhc.bukkit.DeltaUHC;
-import us.jcedeno.deltauhc.bukkit.common.GameStage;
 import us.jcedeno.deltauhc.bukkit.locations.Locations;
+import us.jcedeno.deltauhc.bukkit.stages.global.AbstractStage;
 
 /***
  * Everything that needs to happen during the lobby /waiting for players period
  * of the Game
  */
-public class LobbyStage implements Listener, GameStage {
+public class LobbyStage extends AbstractStage implements Listener {
 
     public static MiniMessage mini =  MiniMessage.miniMessage();
-    public boolean registered = false;
 
     private Integer taskId;
 
@@ -77,10 +76,6 @@ public class LobbyStage implements Listener, GameStage {
      * Method to be called to register the behavior of this class. In this case the timer and events.
      */
     public void registerTasks(){
-        if(registered){
-            throw new RuntimeException("Cannot register an already registered stage.");
-        }
-        this.registered = true;
         BukkitTask runTaskTimer = Bukkit.getScheduler().runTaskTimer(DeltaUHC.getGame(), ()->{
             var sp = DeltaUHC.gameConfig().getStartPlayers();
             final var online = Bukkit.getOnlinePlayers().size();
@@ -101,18 +96,9 @@ public class LobbyStage implements Listener, GameStage {
      * Only to be called if {@link #registerTasks()} has been called.
      */
     public void unregisterTasks(){
-        if(!registered){
-            throw new RuntimeException("Cannot unregister a stage that hasn't been registered.");
-        }
-        this.registered = false;
         Bukkit.getScheduler().cancelTask(this.taskId);
         HandlerList.unregisterAll(this);
     }
 
-    @Override
-    public boolean registered() {
-        return this.registered;
-    }
-    
 
 }

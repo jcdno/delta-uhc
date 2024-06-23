@@ -1,8 +1,11 @@
 package us.jcedeno.deltauhc.bukkit;
 
+import java.util.concurrent.Callable;
 import java.util.function.Function;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import cloud.commandframework.annotations.AnnotationParser;
@@ -11,8 +14,10 @@ import cloud.commandframework.arguments.parser.StandardParameters;
 import cloud.commandframework.bukkit.BukkitCommandManager;
 import cloud.commandframework.execution.CommandExecutionCoordinator;
 import cloud.commandframework.meta.CommandMeta;
+import fr.mrmicky.fastboard.FastBoard;
 import lombok.Getter;
 import us.jcedeno.deltauhc.bukkit.config.GameConfig;
+import us.jcedeno.deltauhc.bukkit.stages.global.GlobalStage;
 import us.jcedeno.deltauhc.bukkit.stages.ingame.InGameStage;
 import us.jcedeno.deltauhc.bukkit.stages.lobby.LobbyStage;
 
@@ -27,6 +32,8 @@ public class DeltaUHC extends JavaPlugin {
     @Getter
     private final InGameStage inGameStage = new InGameStage();
     @Getter
+    private final GlobalStage globalStage = new GlobalStage();
+    @Getter
     private final GameConfig gameConfig = new GameConfig();
     // Command manager
     private BukkitCommandManager<CommandSender> bukkitCommandManager;
@@ -39,6 +46,14 @@ public class DeltaUHC extends JavaPlugin {
         return DeltaUHC.getGame().getGameConfig();
     }
 
+    public static void runSync(Runnable run){
+        Bukkit.getScheduler().runTask(game, run);
+    }
+
+    public FastBoard getBoard(Player player){
+        return globalStage.getBoards().get(player.getUniqueId());
+    }
+
     @Override
     public void onEnable() {
         game = this;
@@ -47,6 +62,7 @@ public class DeltaUHC extends JavaPlugin {
          * was a game already going before (a possible restart).
          */
 
+        globalStage.registerTasks();
         lobbyStage.registerTasks();
 
         /** Register brigadier. */
