@@ -13,6 +13,7 @@ import cloud.commandframework.execution.CommandExecutionCoordinator;
 import cloud.commandframework.meta.CommandMeta;
 import lombok.Getter;
 import us.jcedeno.deltauhc.bukkit.config.GameConfig;
+import us.jcedeno.deltauhc.bukkit.stages.ingame.InGameStage;
 import us.jcedeno.deltauhc.bukkit.stages.lobby.LobbyStage;
 
 /**
@@ -21,7 +22,10 @@ import us.jcedeno.deltauhc.bukkit.stages.lobby.LobbyStage;
  * @author jcedeno
  */
 public class DeltaUHC extends JavaPlugin {
+    @Getter
     private final LobbyStage lobbyStage = new LobbyStage();
+    @Getter
+    private final InGameStage inGameStage = new InGameStage();
     @Getter
     private final GameConfig gameConfig = new GameConfig();
     // Command manager
