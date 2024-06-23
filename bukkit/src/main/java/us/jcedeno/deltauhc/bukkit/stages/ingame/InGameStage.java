@@ -71,8 +71,10 @@ public class InGameStage implements Listener, GameStage {
 
             if (time == DeltaUHC.gameConfig().getShrinkStartTime()) {
                 // Start border shrink
-                Locations.getGameWorld().getWorldBorder().setSize(DeltaUHC.gameConfig().getRadiusFinalSize() * 2,
-                        DeltaUHC.gameConfig().getShrinkDuration());
+                Bukkit.getScheduler().runTask(DeltaUHC.getGame(),
+                        () -> Locations.getGameWorld().getWorldBorder().setSize(
+                                DeltaUHC.gameConfig().getRadiusFinalSize() * 2,
+                                DeltaUHC.gameConfig().getShrinkDuration()));
                 Bukkit.broadcast(
                         mini.deserialize("<yellow>[⚠️] The world border will begging to shirnk and it will take <white>"
                                 + formatTime(DeltaUHC.gameConfig().getShrinkDuration())
@@ -88,6 +90,8 @@ public class InGameStage implements Listener, GameStage {
                     p.sendMessage(mini.deserialize("<green>The game has begun!"));
                     Bukkit.getScheduler().runTask(DeltaUHC.getGame(),
                             () -> {
+                                p.clearActivePotionEffects();
+                                p.getInventory().clear();
                                 p.getInventory().addItem(ItemStack.of(Material.COOKED_BEEF, 8));
                                 p.setGameMode(GameMode.SURVIVAL);
                             });
