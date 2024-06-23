@@ -7,6 +7,7 @@ import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
 import org.bukkit.Instrument;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Note;
 import org.bukkit.Note.Tone;
@@ -41,7 +42,7 @@ public class InGameStage implements Listener, GameStage {
         // Set world border
         var border = Locations.getGameWorld().getWorldBorder();
         border.setCenter(0, 0);
-        border.setSize(DeltaUHC.gameConfig().getRadius());
+        border.setSize(DeltaUHC.gameConfig().getRadius() * 2);
         // Adjust time, difficulty, health regen
         Locations.getGameWorld().setTime(0);
         Locations.getGameWorld().setDifficulty(Difficulty.PEACEFUL);
@@ -57,7 +58,8 @@ public class InGameStage implements Listener, GameStage {
         }, 20 * 15);
         // Register this class as a listener
         Bukkit.getPluginManager().registerEvents(this, DeltaUHC.getGame());
-        // TODO: Register a task that handles the whole start sequence and waiting for start stage
+        // TODO: Register a task that handles the whole start sequence and waiting for
+        // start stage
 
         final AtomicBoolean firstTime = new AtomicBoolean(true);
         // wait for everyone to start
@@ -69,7 +71,7 @@ public class InGameStage implements Listener, GameStage {
 
             if (time == DeltaUHC.gameConfig().getShrinkStartTime()) {
                 // Start border shrink
-                Locations.getGameWorld().getWorldBorder().setSize(DeltaUHC.gameConfig().getRadiusFinalSize(),
+                Locations.getGameWorld().getWorldBorder().setSize(DeltaUHC.gameConfig().getRadiusFinalSize() * 2,
                         DeltaUHC.gameConfig().getShrinkDuration());
                 Bukkit.broadcast(
                         mini.deserialize("<yellow>[⚠️] The world border will begging to shirnk and it will take <white>"
@@ -85,7 +87,10 @@ public class InGameStage implements Listener, GameStage {
                     firstTime.set(false);
                     p.sendMessage(mini.deserialize("<green>The game has begun!"));
                     Bukkit.getScheduler().runTask(DeltaUHC.getGame(),
-                            () -> p.getInventory().addItem(ItemStack.of(Material.COOKED_BEEF, 8)));
+                            () -> {
+                                p.getInventory().addItem(ItemStack.of(Material.COOKED_BEEF, 8));
+                                p.setGameMode(GameMode.SURVIVAL);
+                            });
                 }
                 p.sendActionBar(mini.deserialize("Time: <green>" + formatTime(time) + "</green>"));
             });
