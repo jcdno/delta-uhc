@@ -123,11 +123,11 @@ public class InGameStage extends AbstractStage implements Listener {
                 DeltaUHC.getGame().getBoard(p).updateLines(
                         ChatColor.WHITE + "Time: " + ChatColor.GOLD + formatTime(time),
                         "\n",
-                        ChatColor.WHITE + "Alive: " + ChatColor.GOLD + alive + ChatColor.GRAY + "/" + ChatColor.YELLOW
+                        ChatColor.WHITE + "Alive: " + ChatColor.YELLOW + alive + ChatColor.GRAY + "/" + ChatColor.GOLD
                                 + initial,
                         ChatColor.WHITE + "Border: " + ChatColor.GOLD + currentBorder,
                         "\n",
-                        "@thejcedeno");
+                        ChatColor.DARK_GRAY + "@thejcedeno");
             });
         }, 20 * 5, 20);
 

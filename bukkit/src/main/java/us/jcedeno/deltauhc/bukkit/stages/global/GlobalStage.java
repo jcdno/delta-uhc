@@ -36,7 +36,7 @@ public class GlobalStage extends AbstractStage implements Listener{
 
         FastBoard board = new FastBoard(player);
 
-        board.updateTitle(ChatColor.RED + "Δ UHC");
+        board.updateTitle(ChatColor.RED + "       Δ UHC       ");
 
         this.boards.put(player.getUniqueId(), board);
     }
