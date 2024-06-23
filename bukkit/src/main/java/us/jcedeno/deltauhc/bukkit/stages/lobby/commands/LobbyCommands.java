@@ -1,5 +1,6 @@
 package us.jcedeno.deltauhc.bukkit.stages.lobby.commands;
 
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -18,6 +19,19 @@ public class LobbyCommands {
     public static MiniMessage mini = MiniMessage.miniMessage();
 
     public LobbyCommands(final AnnotationParser<CommandSender> parser) {
+    }
+
+    @CommandMethod("stuck")
+    public void stuckCommand(final CommandSender sender) {
+        if (DeltaUHC.gameConfig().getCurrentGameTime() > 20) {
+            sender.sendMessage(mini.deserialize("<red>You can't use <white>stuck</white> after second 20!"));
+            return;
+        }
+        if (sender instanceof Player p) {
+            // TODO: Stop spam of this command, add unstuckall command
+            p.sendMessage(mini.deserialize("<green>You've been unstuck!"));
+            p.teleport(p.getLocation().getBlock().getRelative(BlockFace.UP).getLocation().add(0.5, 0.5, 0.5));
+        }
     }
 
     @CommandMethod("lobby")
