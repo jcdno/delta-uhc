@@ -1,6 +1,7 @@
 package us.jcedeno.deltauhc.bukkit.stages.ingame;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.IntStream;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
@@ -152,10 +153,19 @@ public class InGameStage extends AbstractStage implements Listener {
         online.forEach(p -> {
             if (iterator.hasNext()) {
                 var loc = iterator.next();
-                p.teleport(loc);
                 var entity = loc.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND, SpawnReason.CUSTOM);
+
+                var c = entity.getChunk();
+                // Get the chunk the location is on and get all chunks within a 2 chunk distance
+                // of c in all directions and load the chunks.
                 entity.setInvisible(true);
 
+                // Load all nearby chunks
+                IntStream.rangeClosed(c.getX() - 2, c.getX() + 2).forEach(x -> IntStream
+                        .rangeClosed(c.getZ() - 2, c.getZ() + 2).forEach(z -> loc.getWorld().getChunkAt(x, z).load()));
+
+                // Teleport player
+                p.teleport(loc);
                 entity.addPassenger(p);
 
                 Bukkit.getPluginManager().registerEvents(new Listener() {
@@ -185,8 +195,9 @@ public class InGameStage extends AbstractStage implements Listener {
 
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
-        e.getPlayer().setHealth(e.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
         e.getPlayer().setGameMode(GameMode.SPECTATOR);
+
+        DeltaUHC.gameConfig().getPlayersAlive().removeIf(c -> e.getPlayer().getUniqueId().compareTo(c) == 0);
     }
 
     /**

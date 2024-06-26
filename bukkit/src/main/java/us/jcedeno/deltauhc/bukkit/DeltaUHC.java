@@ -4,7 +4,13 @@ import java.util.concurrent.Callable;
 import java.util.function.Function;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Difficulty;
+import org.bukkit.GameRule;
+import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
+import org.bukkit.World.Environment;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -57,6 +63,21 @@ public class DeltaUHC extends JavaPlugin {
     @Override
     public void onEnable() {
         game = this;
+
+        // Create lobby world
+        WorldCreator wc = new WorldCreator("lobby");
+        wc.environment(Environment.NORMAL);
+        wc.type(WorldType.FLAT);
+        wc.generator("VoidGen");
+        var world = wc.createWorld();
+        world.setDifficulty(Difficulty.PEACEFUL);
+        world.setHardcore(true);
+        world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
+        world.setGameRule(GameRule.RANDOM_TICK_SPEED, 0);
+        world.setPVP(false);
+        world.getEntities().forEach(Entity::remove);
+        world.setTime(0);
+
         /*
          * TODO: Do not register the stages right away, check something to see if there
          * was a game already going before (a possible restart).
@@ -87,6 +108,8 @@ public class DeltaUHC extends JavaPlugin {
                 commandMetaFunction);
 
         this.constructCommands();
+
+
 
     }
 

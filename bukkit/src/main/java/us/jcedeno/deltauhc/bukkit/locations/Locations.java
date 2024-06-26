@@ -18,7 +18,7 @@ public class Locations {
      */
     public static Location getLobbySpawn() {
 
-        return Bukkit.getWorlds().get(0).getHighestBlockAt(0, 0).getLocation().add(0.5, 1.5, 0.5);
+        return Bukkit.getWorld("lobby").getSpawnLocation().add(0.5, 1.5, 0.5);
     }
 
     /**
