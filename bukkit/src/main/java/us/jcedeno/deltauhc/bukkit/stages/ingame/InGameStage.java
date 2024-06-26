@@ -18,12 +18,14 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.md_5.bungee.api.ChatColor;
 import us.jcedeno.deltauhc.bukkit.DeltaUHC;
@@ -80,7 +82,7 @@ public class InGameStage extends AbstractStage implements Listener {
                                 cfg.getRadiusFinalSize() * 2,
                                 cfg.getShrinkDuration()));
                 Bukkit.broadcast(
-                        mini.deserialize("<yellow>[!!] The world border will begging to shrink and it will take <white>"
+                        mini.deserialize("<yellow>[!!] The world border will begin to shrink and it will take <white>"
                                 + formatTime(cfg.getShrinkDuration())
                                 + "</white> to complete shrinking down to a radius of <white>"
                                 + cfg.getRadiusFinalSize() + "</white> blocks!</yellow>"));
@@ -103,9 +105,26 @@ public class InGameStage extends AbstractStage implements Listener {
                 cfg.setPvp(true);
                 Bukkit.broadcast(mini.deserialize("<#DC14A0>[⚔] PVP has been enabled."));
             }
+
             var currentBorder = Locations.getGameWorld().getWorldBorder().getSize() / 2;
             var alive = DeltaUHC.gameConfig().getPlayersAlive().size();
             var initial = DeltaUHC.gameConfig().getInitialPlayers();
+
+            int timeUntilHeal = getTimeUntilEvent(time, cfg.getHealTime());
+            int timeUntilPvP = getTimeUntilEvent(time, cfg.getPvpTime());
+            int timeUntilShrink = getTimeUntilEvent(time, cfg.getShrinkStartTime());
+
+            int timeUntilNextEvent = Math.min(Math.min(timeUntilHeal, timeUntilPvP), timeUntilShrink);
+
+            String nextEventName = "None";
+            if (timeUntilNextEvent == timeUntilHeal) {
+                nextEventName = "Final Heal";
+            } else if (timeUntilNextEvent == timeUntilPvP) {
+                nextEventName = "PvP";
+            } else if (timeUntilNextEvent == timeUntilShrink) {
+                nextEventName = "Border Shrink";
+            }
+            final String actualEvent = nextEventName;
 
             Bukkit.getOnlinePlayers().stream().forEach((p) -> {
                 if (firstTime.get()) {
@@ -120,7 +139,8 @@ public class InGameStage extends AbstractStage implements Listener {
                                 p.setGameMode(GameMode.SURVIVAL);
                             });
                 }
-                p.sendActionBar(mini.deserialize("Time: <green>" + formatTime(time) + "</green>"));
+                p.sendActionBar(
+                        mini.deserialize(actualEvent + ": <green>" + formatTime(timeUntilNextEvent)));
                 DeltaUHC.getGame().getBoard(p).updateLines(
                         ChatColor.WHITE + "Time: " + ChatColor.GOLD + formatTime(time),
                         "\n",
@@ -133,6 +153,21 @@ public class InGameStage extends AbstractStage implements Listener {
         }, 20 * 5, 20);
 
         this.taskId = runTaskTimer.getTaskId();
+    }
+
+    private int getTimeUntilEvent(int currentTime, int eventTime) {
+        return eventTime > currentTime ? eventTime - currentTime : Integer.MAX_VALUE;
+    }
+
+    static Component PVP_DISABLED = mini.deserialize("<red>[⚔] PVP is not enabled.");
+
+    @EventHandler
+    public void onPVP(EntityDamageByEntityEvent e) {
+        if (e.getDamager().getType() == EntityType.PLAYER && e.getEntityType() == EntityType.PLAYER
+                && DeltaUHC.gameConfig().isPvp()) {
+            e.setCancelled(true);
+            e.getDamager().sendMessage(PVP_DISABLED);
+        }
     }
 
     @Override
