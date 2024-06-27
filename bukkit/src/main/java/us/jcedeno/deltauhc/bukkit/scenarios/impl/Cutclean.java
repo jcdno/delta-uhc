@@ -53,6 +53,7 @@ public class Cutclean extends ListenerScenario {
         if (itemInHand.getType() == Material.AIR || itemInHand.containsEnchantment(Enchantment.SILK_TOUCH))
             return;
         switch (block.getType()) {
+            case DEEPSLATE_IRON_ORE:
             case IRON_ORE: {
                 if (!block.getDrops(itemInHand, player).isEmpty()) {
 
@@ -70,6 +71,25 @@ public class Cutclean extends ListenerScenario {
                 }
                 break;
             }
+            case DEEPSLATE_COPPER_ORE:
+            case COPPER_ORE: {
+                if (!block.getDrops(itemInHand, player).isEmpty()) {
+
+                    final int fortune = fortuneMultiplier(itemInHand);
+                    e.setDropItems(false);
+
+                    // 70% chance of getting xp
+                    if (random.nextDouble() <= 0.70) {
+                        e.setExpToDrop(1);
+
+                    }
+
+                    dropCenter(new ItemStack(Material.COPPER_INGOT, (fortune + extras)), block.getLocation());
+
+                }
+                break;
+            }
+            case DEEPSLATE_GOLD_ORE:
             case GOLD_ORE: {
                 if (!block.getDrops(itemInHand, player).isEmpty()) {
                     final int fortune = fortuneMultiplier(itemInHand);
