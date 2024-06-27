@@ -218,8 +218,11 @@ public class TeamManager {
         invites.put(target.getUniqueId(), TeamInvite.forTeam(team));
         target.sendMessage(miniMessage().deserialize("<white>You have been invited to join <green>" + team.getTeamName()
                 + "<white> by <green>" + sender.getName() + "<white>."));
-        target.sendMessage(miniMessage().deserialize("<white>Type <green>/team accept " + sender.getName()
-                + "<white> to accept the invite or <red>/team reject " + sender.getName() + "<white> to reject it."));
+        target.sendMessage(miniMessage()
+                .deserialize("<hover:show_text:'<green>Click to accept team invite!'><click:run_command:/team accept "
+                        + sender.getName() + "><white>Type <green>/team accept" + sender.getName() + "</click></hover>"
+                        + "<white> to accept the invite or <red>/team reject " + sender.getName()
+                        + "<white> to reject it."));
     }
 
     /**

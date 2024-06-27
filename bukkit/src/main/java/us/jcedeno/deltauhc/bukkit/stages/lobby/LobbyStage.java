@@ -1,7 +1,5 @@
 package us.jcedeno.deltauhc.bukkit.stages.lobby;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,10 +20,9 @@ import org.bukkit.scheduler.BukkitTask;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.md_5.bungee.api.ChatColor;
 import us.jcedeno.deltauhc.bukkit.DeltaUHC;
-import us.jcedeno.deltauhc.bukkit.config.GameConfig;
 import us.jcedeno.deltauhc.bukkit.locations.Locations;
+import us.jcedeno.deltauhc.bukkit.scenarios.models.BaseScenario;
 import us.jcedeno.deltauhc.bukkit.stages.global.AbstractStage;
 
 /***
@@ -39,18 +36,42 @@ public class LobbyStage extends AbstractStage implements Listener {
     private Integer taskId;
     private static String LOBBY_BOARD = """
             <#f6edd8>Online: <#cc1a40>%player_count%
+            
+            <#f6edd8>Team: <#cc1a40>%teamSize%
+            %scenarios%
 
             @thejcedeno
             """;
+
     /**
      * 
      * @return Returns the stage's board to be rendered
      */
     private static List<Component> getProcessedLines() {
-        String processedBoard = LOBBY_BOARD
-                .replace("%player_count%", "" + Bukkit.getOnlinePlayers().size());
+        int playerCount = Bukkit.getOnlinePlayers().size();
+        List<String> enabledScenarios = DeltaUHC.getGame().getScenarioManager().enabledScenarios().stream()
+                .map(BaseScenario::name)
+                .toList();
 
-        return Arrays.stream(processedBoard.split("\n")).map(m -> mini.deserialize(m)).toList();
+        String scenariosString = enabledScenarios.isEmpty()
+                ? "<red>No Scenarios</red>"
+                : String.join("\n", "<white> - " + enabledScenarios + "</white>");
+
+        String processedBoard = LOBBY_BOARD
+                .replace("%player_count%", String.valueOf(playerCount))
+                .replace("%scenarios%", scenariosString)
+                .replace("%teamSize%", getTeamSizeString(DeltaUHC.gameConfig().getTeamSize()));
+
+        return Arrays.stream(processedBoard.split("\n"))
+                .map(mini::deserialize)
+                .toList();
+    }
+
+    private static String getTeamSizeString(int size) {
+        return switch (size) {
+            case 0, 1 -> "FFA";
+            default -> "To" + size;
+        };
     }
 
     @EventHandler
