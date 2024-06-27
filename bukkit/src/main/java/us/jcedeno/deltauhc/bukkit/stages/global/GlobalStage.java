@@ -12,12 +12,15 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import fr.mrmicky.fastboard.FastBoard;
+import fr.mrmicky.fastboard.adventure.FastBoard;
 import lombok.Getter;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.md_5.bungee.api.ChatColor;
 import us.jcedeno.deltauhc.bukkit.DeltaUHC;
 
 public class GlobalStage extends AbstractStage implements Listener{
+    public static MiniMessage mini = MiniMessage.miniMessage();
+
     @Getter
     private final Map<UUID, FastBoard> boards = new HashMap<>();
 
@@ -37,7 +40,7 @@ public class GlobalStage extends AbstractStage implements Listener{
 
         FastBoard board = new FastBoard(player);
 
-        board.updateTitle(ChatColor.RED + "       Δ UHC       ");
+        board.updateTitle(mini.deserialize("<red>       Δ UHC       "));
 
         this.boards.put(player.getUniqueId(), board);
     }

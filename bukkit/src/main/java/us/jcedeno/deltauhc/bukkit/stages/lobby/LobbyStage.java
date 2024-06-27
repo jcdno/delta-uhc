@@ -2,6 +2,7 @@ package us.jcedeno.deltauhc.bukkit.stages.lobby;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -19,6 +20,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.scheduler.BukkitTask;
 
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.md_5.bungee.api.ChatColor;
 import us.jcedeno.deltauhc.bukkit.DeltaUHC;
@@ -36,58 +38,19 @@ public class LobbyStage extends AbstractStage implements Listener {
 
     private Integer taskId;
     private static String LOBBY_BOARD = """
-            %primary%Online: %secondary%%player_count%
+            <#f6edd8>Online: <#cc1a40>%player_count%
 
-            %config%
-
-            %secondary%@thejcedeno
+            @thejcedeno
             """;
-
-    public static List<String> formatConfigWithColors(GameConfig config, String primaryColor, String secondaryColor) {
-        List<String> result = new ArrayList<>();
-        Field[] fields = GameConfig.class.getDeclaredFields();
-
-        for (Field field : fields) {
-            try {
-                field.setAccessible(true);
-                Object value = field.get(config);
-                if (value instanceof List) {
-                    value = ((List<?>) value).size(); // For List<UUID> playersAlive, we just display the size
-                }
-                result.add(String.format("%s%s: %s%s", primaryColor, field.getName(), secondaryColor, value));
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        return result;
-    }
-
     /**
      * 
      * @return Returns the stage's board to be rendered
      */
-    private static String[] getProcessedLines() {
-        var config = DeltaUHC.gameConfig();
-        String primaryColor = ChatColor.of("#f6edd8") + "";
-        String secondaryColor = ChatColor.of("#cc1a40") + "";
-
-        List<String> configLines = formatConfigWithColors(config, primaryColor, secondaryColor);
-
-        StringBuilder configReplacement = new StringBuilder();
-        for (String line : configLines) {
-            configReplacement.append(line).append("\n");
-        }
-
+    private static List<Component> getProcessedLines() {
         String processedBoard = LOBBY_BOARD
-                .replace("%player_count%", "" + Bukkit.getOnlinePlayers().size())
-                .replace("%primary%", primaryColor)
-                .replace("%secondary%", secondaryColor);
+                .replace("%player_count%", "" + Bukkit.getOnlinePlayers().size());
 
-        // Replace %config% after replacing other placeholders to ensure %secondary% in
-        // @thejcedeno line gets replaced correctly
-        processedBoard = processedBoard.replace("%config%", configReplacement.toString().trim());
-
-        return processedBoard.split("\n");
+        return Arrays.stream(processedBoard.split("\n")).map(m -> mini.deserialize(m)).toList();
     }
 
     @EventHandler

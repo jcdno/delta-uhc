@@ -20,7 +20,7 @@ import cloud.commandframework.arguments.parser.StandardParameters;
 import cloud.commandframework.bukkit.BukkitCommandManager;
 import cloud.commandframework.execution.CommandExecutionCoordinator;
 import cloud.commandframework.meta.CommandMeta;
-import fr.mrmicky.fastboard.FastBoard;
+import fr.mrmicky.fastboard.adventure.FastBoard;
 import lombok.Getter;
 import us.jcedeno.deltauhc.bukkit.config.GameConfig;
 import us.jcedeno.deltauhc.bukkit.stages.global.GlobalStage;

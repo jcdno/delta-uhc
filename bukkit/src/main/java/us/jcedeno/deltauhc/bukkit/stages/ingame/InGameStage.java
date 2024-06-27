@@ -1,5 +1,9 @@
 package us.jcedeno.deltauhc.bukkit.stages.ingame;
 
+import static us.jcedeno.deltauhc.bukkit.common.utils.StringUtils.formatTime;
+
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 
@@ -27,18 +31,44 @@ import org.bukkit.scheduler.BukkitTask;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.md_5.bungee.api.ChatColor;
 import us.jcedeno.deltauhc.bukkit.DeltaUHC;
 import us.jcedeno.deltauhc.bukkit.locations.Locations;
 import us.jcedeno.deltauhc.bukkit.stages.global.AbstractStage;
 import us.jcedeno.deltauhc.bukkit.stages.ingame.listeners.ScatterListeners;
 
-import static us.jcedeno.deltauhc.bukkit.common.utils.StringUtils.formatTime;
-
 public class InGameStage extends AbstractStage implements Listener {
     public static MiniMessage mini = MiniMessage.miniMessage();
     public ScatterListeners scatterListeners = new ScatterListeners();
     private Integer taskId;
+
+    /**
+     * The template for the board that will be rendered in game.
+     */
+    private static final String GAME_BOARD = """
+            <white>Time: <gold>%formattedGameTime%</gold>
+
+            Alive: <yellow>%playersAlive%</yellow><gray>/</gray><gold>%initialPlayers%</gold>
+            Border: <gold>%currentBorder%</gold>
+
+            <rainbow>@thejcedeno</rainbow>
+            """;
+
+    /**
+     * 
+     * @return Returns the stage's board to be rendered
+     */
+    private static List<Component> getProcessedLines() {
+        var config = DeltaUHC.gameConfig();
+
+        String processedBoard = GAME_BOARD
+                .replace("%formattedGameTime%", formatTime(config.getCurrentGameTime()))
+                .replace("%playersAlive%", "" + config.getPlayersAlive().size())
+                .replace("%initialPlayers%", "" + config.getInitialPlayers())
+                .replace("%currentBorder%",
+                        "" + String.format("%.2f", Locations.getGameWorld().getWorldBorder().getSize() / 2));
+
+        return Arrays.stream(processedBoard.split("\n")).map(m -> mini.deserialize(m)).toList();
+    }
 
     @Override
     public void registerTasks() {
@@ -141,14 +171,7 @@ public class InGameStage extends AbstractStage implements Listener {
                 }
                 p.sendActionBar(
                         mini.deserialize(actualEvent + ": <green>" + formatTime(timeUntilNextEvent)));
-                DeltaUHC.getGame().getBoard(p).updateLines(
-                        ChatColor.WHITE + "Time: " + ChatColor.GOLD + formatTime(time),
-                        "\n",
-                        ChatColor.WHITE + "Alive: " + ChatColor.YELLOW + alive + ChatColor.GRAY + "/" + ChatColor.GOLD
-                                + initial,
-                        ChatColor.WHITE + "Border: " + ChatColor.GOLD + currentBorder,
-                        "\n",
-                        ChatColor.DARK_GRAY + "@thejcedeno");
+                DeltaUHC.getGame().getBoard(p).updateLines(getProcessedLines());
             });
         }, 20 * 5, 20);
 
@@ -164,7 +187,7 @@ public class InGameStage extends AbstractStage implements Listener {
     @EventHandler
     public void onPVP(EntityDamageByEntityEvent e) {
         if (e.getDamager().getType() == EntityType.PLAYER && e.getEntityType() == EntityType.PLAYER
-                && DeltaUHC.gameConfig().isPvp()) {
+                && !DeltaUHC.gameConfig().isPvp()) {
             e.setCancelled(true);
             e.getDamager().sendMessage(PVP_DISABLED);
         }
