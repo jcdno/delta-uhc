@@ -3,15 +3,22 @@ package us.jcedeno.deltauhc.bukkit.stages.ingame;
 import static us.jcedeno.deltauhc.bukkit.common.utils.StringUtils.formatTime;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
 import org.bukkit.Instrument;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Note;
 import org.bukkit.Note.Tone;
@@ -35,6 +42,7 @@ import us.jcedeno.deltauhc.bukkit.DeltaUHC;
 import us.jcedeno.deltauhc.bukkit.locations.Locations;
 import us.jcedeno.deltauhc.bukkit.stages.global.AbstractStage;
 import us.jcedeno.deltauhc.bukkit.stages.ingame.listeners.ScatterListeners;
+import us.jcedeno.deltauhc.bukkit.team.models.Team;
 
 public class InGameStage extends AbstractStage implements Listener {
     public static MiniMessage mini = MiniMessage.miniMessage();
@@ -199,56 +207,107 @@ public class InGameStage extends AbstractStage implements Listener {
     }
 
     public void startTeleport() {
-        var online = Bukkit.getOnlinePlayers();
-        // Add initial player
-        online.stream().map(Player::getUniqueId).forEach(DeltaUHC.gameConfig()::addPlayer);
+        Set<Player> onlinePlayers = new HashSet<>(Bukkit.getOnlinePlayers());
+
+        // Add initial players to the game configuration
+        onlinePlayers.stream().map(Player::getUniqueId).forEach(DeltaUHC.gameConfig()::addPlayer);
         DeltaUHC.gameConfig().setInitialPlayers(DeltaUHC.gameConfig().getPlayersAlive().size());
 
-        var locs = Locations.findSafeLocations(Locations.getGameWorld(), online.size() + 1,
-                DeltaUHC.gameConfig().getRadius(), DeltaUHC.gameConfig().getMinDistance());
-        var iterator = locs.iterator();
+        // Find safe locations for teleportation
+        List<Location> safeLocations = Locations.findSafeLocations(
+                Locations.getGameWorld(),
+                onlinePlayers.size() + 1,
+                DeltaUHC.gameConfig().getRadius(),
+                DeltaUHC.gameConfig().getMinDistance());
+        Iterator<Location> locationIterator = safeLocations.iterator();
 
-        online.forEach(p -> {
-            if (iterator.hasNext()) {
-                var loc = iterator.next();
-                var entity = loc.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND, SpawnReason.CUSTOM);
+        // Check if the game is a team game
+        boolean isTeamsGame = DeltaUHC.gameConfig().getTeamSize() > 1;
 
-                var c = entity.getChunk();
-                // Get the chunk the location is on and get all chunks within a 2 chunk distance
-                // of c in all directions and load the chunks.
-                entity.setInvisible(true);
+        // Teleport players
+        if (isTeamsGame) {
+            teleportTeamPlayers(onlinePlayers, locationIterator);
+        } else {
+            teleportSoloPlayers(onlinePlayers, locationIterator);
+        }
+    }
 
-                // Load all nearby chunks
-                IntStream.rangeClosed(c.getX() - 2, c.getX() + 2).forEach(x -> IntStream
-                        .rangeClosed(c.getZ() - 2, c.getZ() + 2).forEach(z -> loc.getWorld().getChunkAt(x, z).load()));
+    private void teleportTeamPlayers(Set<Player> onlinePlayers, Iterator<Location> locationIterator) {
+        Map<Team, Location> teamLocations = new HashMap<>();
 
-                // Teleport player
-                p.teleport(loc);
-                entity.addPassenger(p);
+        for (Player player : onlinePlayers) {
+            Team team = DeltaUHC.getGame().getTeamManager().teamByPlayer(player.getUniqueId());
 
-                Bukkit.getPluginManager().registerEvents(new Listener() {
-                    @EventHandler
-                    public void exitVehicle(VehicleExitEvent e) {
-                        if (e.getExited() instanceof Player pl && pl.getUniqueId().compareTo(p.getUniqueId()) == 0) {
-                            entity.remove();
-                        }
-                    }
+            if (!teamLocations.containsKey(team) && locationIterator.hasNext()) {
+                teamLocations.put(team, locationIterator.next());
+            }
 
-                    @EventHandler
-                    public void playerMove(PlayerMoveEvent e) {
-                        if (e.getPlayer().getUniqueId().compareTo(p.getUniqueId()) == 0
-                                && e.hasExplicitlyChangedBlock()) {
-                            HandlerList.unregisterAll(this);
-                        }
-                    }
+            Location teleportLocation = teamLocations.get(team);
+            if (teleportLocation != null) {
+                teleportPlayer(player, teleportLocation);
+            } else {
+                player.sendMessage(mini.deserialize("<red>Couldn't teleport you to a safe location..."));
+            }
+        }
+    }
 
-                }, DeltaUHC.getGame());
+    private void teleportSoloPlayers(Set<Player> onlinePlayers, Iterator<Location> locationIterator) {
+        for (Player player : onlinePlayers) {
+            if (locationIterator.hasNext()) {
+                Location teleportLocation = locationIterator.next();
+                teleportPlayer(player, teleportLocation);
+            } else {
+                player.sendMessage(mini.deserialize("<red>Couldn't teleport you to a safe location..."));
+            }
+        }
+    }
 
-                p.sendMessage(mini.deserialize("<yellow>You've been teleported to a safe start location."));
-            } else
-                p.sendMessage(mini.deserialize("<red>Couldn't teleport you to a safe location..."));
-        });
+    private void teleportPlayer(Player player, Location location) {
+        // Spawn an invisible armor stand at the location
+        var entity = location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND, SpawnReason.CUSTOM);
+        entity.setInvisible(true);
+        entity.setInvulnerable(true);
 
+        // Load nearby chunks
+        Chunk chunk = entity.getChunk();
+        loadNearbyChunks(chunk);
+
+        // Teleport player and add them as a passenger to the armor stand
+        player.teleport(location);
+        entity.addPassenger(player);
+
+        // Register event listeners for the player
+        registerPlayerEvents(player, entity);
+
+        player.sendMessage(mini.deserialize("<yellow>You've been teleported to a safe start location."));
+    }
+
+    private void loadNearbyChunks(Chunk chunk) {
+        IntStream.rangeClosed(chunk.getX() - 2, chunk.getX() + 2)
+                .forEach(x -> IntStream.rangeClosed(chunk.getZ() - 2, chunk.getZ() + 2)
+                        .forEach(z -> chunk.getWorld().getChunkAt(x, z).load()));
+    }
+
+    private void registerPlayerEvents(Player player, org.bukkit.entity.Entity entity) {
+        Listener listener = new Listener() {
+            @EventHandler
+            public void onPlayerMove(PlayerMoveEvent event) {
+                if (event.getPlayer().getUniqueId().equals(player.getUniqueId()) && event.hasExplicitlyChangedBlock()) {
+                    HandlerList.unregisterAll(this);
+                }
+            }
+
+            @EventHandler
+            public void onVehicleExit(VehicleExitEvent event) {
+                if (event.getExited() instanceof Player exitedPlayer
+                        && exitedPlayer.getUniqueId().equals(player.getUniqueId())) {
+                    entity.remove();
+                    HandlerList.unregisterAll(this);
+                }
+            }
+        };
+
+        Bukkit.getPluginManager().registerEvents(listener, DeltaUHC.getGame());
     }
 
     @EventHandler

@@ -52,6 +52,33 @@ public class LobbyCommands {
 
         DeltaUHC.gameConfig().setStartPlayers(number);
     }
+    
+    @ProxiedBy("settings-teamSize")
+    @CommandMethod("lobby settings teamSize <number>")
+    public void teamSize(final CommandSender sender, @Argument(value = "number") Integer number) {
+        sender.sendMessage(mini
+                .deserialize("<green>Changed max team size to <white>" + number + "</white>!"));
+
+        DeltaUHC.gameConfig().setTeamSize(number);
+    }
+    @ProxiedBy("settings-teamManagement")
+    @CommandMethod("lobby settings teamManagement <boolean>")
+    public void teamSize(final CommandSender sender, @Argument(value = "boolean") Boolean toggle) {
+        sender.sendMessage(mini
+                .deserialize("<green>Changed team management to <white>" + toggle + "</white>!"));
+
+        DeltaUHC.gameConfig().setTeamManagement(toggle);
+    }
+
+    @ProxiedBy("settings-pvpTime")
+    @CommandMethod("lobby settings pvpTime <number>")
+    public void pvpTime(final CommandSender sender, @Argument(value = "number") Integer number) {
+        sender.sendMessage(mini
+                .deserialize("<green>Changed pvp time to <white>" + number + "</white>!"));
+
+        DeltaUHC.gameConfig().setPvpTime(number);
+    }
+
 
     @ProxiedBy("settings-radius")
     @CommandMethod("lobby settings radius <number>")

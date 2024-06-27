@@ -25,7 +25,7 @@ import us.jcedeno.deltauhc.bukkit.team.TeamManager;
 @Log4j2
 public class TeamCommands {
     public TeamManager teamManager = DeltaUHC.getGame().getTeamManager();
-    
+
     private static final String DEFAULT_TEAM_NAME = "DefaultTeamName";
 
     @CommandMethod("teams")
@@ -47,6 +47,10 @@ public class TeamCommands {
     @CommandDescription("If the  sender doesn't have a team, it create it for them")
     public void createTeam(final @NonNull Player player,
             @Argument(value = "teamName", defaultValue = DEFAULT_TEAM_NAME) @Greedy String teamName) {
+        if (!DeltaUHC.gameConfig().isTeamManagement()) {
+            player.sendMessage(miniMessage().deserialize(String.format("<red>Team management is disabled!")));
+            return;
+        }
         // If team name is actually default team name, then generate a random team name
         if (teamName.equals(DEFAULT_TEAM_NAME)) {
             teamName = "Team " + UUID.randomUUID().toString().split("-")[0];
@@ -74,6 +78,10 @@ public class TeamCommands {
     @ProxiedBy("disband")
     @CommandDescription("Disbands the team of the player.")
     public void disbandTeam(final @NonNull Player player) {
+        if (!DeltaUHC.gameConfig().isTeamManagement()) {
+            player.sendMessage(miniMessage().deserialize(String.format("<red>Team management is disabled!")));
+            return;
+        }
         if (!teamManager.hasTeam(player.getUniqueId())) {
             player.sendMessage(miniMessage().deserialize("<red>You don't have a team."));
             return;
@@ -87,6 +95,10 @@ public class TeamCommands {
     @ProxiedBy("invite")
     @CommandDescription("Invites a player to your team.")
     public void playerInviteCommand(final Player sender, final @Argument("target") OfflinePlayer target) {
+        if (!DeltaUHC.gameConfig().isTeamManagement()) {
+            sender.sendMessage(miniMessage().deserialize(String.format("<red>Team management is disabled!")));
+            return;
+        }
         if (!teamManager.hasTeam(sender.getUniqueId())) {
             sender.sendMessage(miniMessage().deserialize("<red>You don't have a team."));
             return;
@@ -104,6 +116,11 @@ public class TeamCommands {
     @ProxiedBy("accept")
     @CommandDescription("Accepts a team invite.")
     public void teamAcceptCommand(final Player sender, final @Argument("inviter") Player inviter) {
+
+        if (!DeltaUHC.gameConfig().isTeamManagement()) {
+            sender.sendMessage(miniMessage().deserialize(String.format("<red>Team management is disabled!")));
+            return;
+        }
         if (teamManager.hasTeam(sender.getUniqueId())) {
             sender.sendMessage(miniMessage().deserialize("<red>You already have a team."));
             return;
@@ -120,6 +137,10 @@ public class TeamCommands {
     @ProxiedBy("reject")
     @CommandDescription("Denies a team invite.")
     public void teamDenyCommand(final Player sender, final @Argument("inviter") Player inviter) {
+        if (!DeltaUHC.gameConfig().isTeamManagement()) {
+            sender.sendMessage(miniMessage().deserialize(String.format("<red>Team management is disabled!")));
+            return;
+        }
         if (teamManager.hasTeam(sender.getUniqueId())) {
             sender.sendMessage(miniMessage().deserialize("<red>You already have a team."));
             return;
@@ -135,6 +156,10 @@ public class TeamCommands {
     @CommandMethod("team kick <target>")
     @CommandDescription("Kicks a player from your team.")
     public void teamKickCommand(final Player sender, final @Argument("target") OfflinePlayer target) {
+        if (!DeltaUHC.gameConfig().isTeamManagement()) {
+            sender.sendMessage(miniMessage().deserialize(String.format("<red>Team management is disabled!")));
+            return;
+        }
         if (!teamManager.hasTeam(sender.getUniqueId())) {
             sender.sendMessage(miniMessage().deserialize("<red>You don't have a team."));
             return;

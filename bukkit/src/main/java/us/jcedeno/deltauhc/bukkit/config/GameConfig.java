@@ -21,6 +21,9 @@ public class GameConfig {
     int pvpTime = 15 * 60;
     int healTime = 30;
 
+    int teamSize = 1;
+    boolean teamManagement = true;
+
     volatile boolean pvp = false;
     volatile int currentGameTime = -1;
     volatile List<UUID> playersAlive = new ArrayList<>();
