@@ -21,11 +21,14 @@ import cloud.commandframework.bukkit.BukkitCommandManager;
 import cloud.commandframework.execution.CommandExecutionCoordinator;
 import cloud.commandframework.meta.CommandMeta;
 import fr.mrmicky.fastboard.adventure.FastBoard;
+import fr.mrmicky.fastinv.FastInvManager;
 import lombok.Getter;
 import us.jcedeno.deltauhc.bukkit.config.GameConfig;
+import us.jcedeno.deltauhc.bukkit.scenarios.ScenarioManager;
 import us.jcedeno.deltauhc.bukkit.stages.global.GlobalStage;
 import us.jcedeno.deltauhc.bukkit.stages.ingame.InGameStage;
 import us.jcedeno.deltauhc.bukkit.stages.lobby.LobbyStage;
+import us.jcedeno.deltauhc.bukkit.team.TeamManager;
 
 /**
  * Entry point of Delta UHC, 1.21
@@ -41,6 +44,10 @@ public class DeltaUHC extends JavaPlugin {
     private final GlobalStage globalStage = new GlobalStage();
     @Getter
     private final GameConfig gameConfig = new GameConfig();
+    @Getter
+    private final TeamManager teamManager = new TeamManager();
+    @Getter
+    private final ScenarioManager scenarioManager = new ScenarioManager();
     // Command manager
     private BukkitCommandManager<CommandSender> bukkitCommandManager;
     private AnnotationParser<CommandSender> annotationParser;
@@ -63,6 +70,7 @@ public class DeltaUHC extends JavaPlugin {
     @Override
     public void onEnable() {
         game = this;
+        FastInvManager.register(this);
 
         // Create lobby world
         WorldCreator wc = new WorldCreator("lobby");

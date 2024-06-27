@@ -38,6 +38,10 @@ dependencies {
     /** Import Minimessage */
     implementation "net.kyori:adventure-text-minimessage:${versions.adventureTextMinimessage}"
     implementation "fr.mrmicky:fastboard:${versions.fastboard}"
+    /** reflections */    
+    implementation 'org.reflections:reflections:0.10.2'
+    // inv
+    implementation 'fr.mrmicky:FastInv:3.0.4'
 
     // Test dependencies
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
