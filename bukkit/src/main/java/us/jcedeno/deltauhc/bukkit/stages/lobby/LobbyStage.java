@@ -52,7 +52,7 @@ public class LobbyStage extends AbstractStage implements Listener {
         List<String> enabledScenarios = DeltaUHC.getGame().getScenarioManager().enabledScenarios().stream()
                 .map(BaseScenario::name)
                 .toList();
-
+        //TODO: Fix scenarios string not using multiple lines?
         String scenariosString = enabledScenarios.isEmpty()
                 ? "<red>No Scenarios</red>"
                 : String.join("\n", "<white> - " + enabledScenarios + "</white>");
@@ -134,6 +134,11 @@ public class LobbyStage extends AbstractStage implements Listener {
      * timer and events.
      */
     public void registerTasks() {
+        /**
+         * TODO: Introduce "Loopable stage", an interface that stages can implement to define a common "stage loop".
+         * This loop is a Task, in this case BukkitTask, that runs undefinitely until the stage is unregistered.
+         * The loop will take in as input whether it is async or not, the period, and the initialDelay.
+         */
         BukkitTask runTaskTimer = Bukkit.getScheduler().runTaskTimer(DeltaUHC.getGame(), () -> {
             var sp = DeltaUHC.gameConfig().getStartPlayers();
             final var online = Bukkit.getOnlinePlayers().size();
