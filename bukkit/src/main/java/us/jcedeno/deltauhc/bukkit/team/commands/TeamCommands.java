@@ -24,6 +24,7 @@ import us.jcedeno.deltauhc.bukkit.team.TeamManager;
  * TODO:
  * - Add team size validation, teams cannot have more members than config.teamSize
  * - Make all accept and reject commands clickable.
+ * - /invite should auto create team when not in one already.
  * - Add /tc to toggle between chat channels, if TC enabled, then all messages are on team chat by default, unless prefixed by '!'.
  */
 @CommandContainer
