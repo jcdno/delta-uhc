@@ -20,6 +20,12 @@ import lombok.extern.log4j.Log4j2;
 import us.jcedeno.deltauhc.bukkit.DeltaUHC;
 import us.jcedeno.deltauhc.bukkit.team.TeamManager;
 
+/**
+ * TODO:
+ * - Add team size validation, teams cannot have more members than config.teamSize
+ * - Make all accept and reject commands clickable.
+ * - Add /tc to toggle between chat channels, if TC enabled, then all messages are on team chat by default, unless prefixed by '!'.
+ */
 @CommandContainer
 @CommandDescription("Team commands")
 @Log4j2
