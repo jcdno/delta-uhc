@@ -110,11 +110,11 @@ public class Cutclean extends ListenerScenario {
         var stack = e.getEntity().getItemStack();
         var type = stack.getType();
         if (type == Material.POTATO) {
-            stack.withType(Material.BAKED_POTATO);
+            stack.setType(Material.BAKED_POTATO);
         } else if (type == Material.ANCIENT_DEBRIS) {
-            stack.withType(Material.NETHERITE_SCRAP);
+            stack.setType(Material.NETHERITE_SCRAP);
         } else if (type == Material.KELP) {
-            stack.withType(Material.DRIED_KELP);
+            stack.setType(Material.DRIED_KELP);
         }
     }
 
@@ -134,7 +134,7 @@ public class Cutclean extends ListenerScenario {
                         final Material cookedType = Material
                                 .getMaterial("COOKED_" + it.getType().toString().toUpperCase());
                         if (cookedType != null)
-                            it.withType(cookedType);
+                            it.setType(cookedType);
                     }
                 });
                 break;
