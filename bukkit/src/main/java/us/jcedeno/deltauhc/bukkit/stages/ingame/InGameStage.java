@@ -205,6 +205,13 @@ public class InGameStage extends AbstractStage implements Listener {
     public void unregisterTasks() {
 
     }
+    /**
+     * TODO: Properly implement the teleport as a STAGE and let that stage tell the game when to actually start.
+     * 
+     * Calculate all the locations needed for teleport, substracting all the locations for each team member, + 1, and preload the chunks and keep them loaded until everyone has been teleported.
+     * Teleport players in chunks a x amounts of locations are fully preloaded and have them wait until everyone else teleports.
+     * Once everyone is teleported, heal, clear inventory, set gamemode, etc etc, then unregister current stage and register InGamestage.
+     */
 
     public void startTeleport() {
         Set<Player> onlinePlayers = new HashSet<>(Bukkit.getOnlinePlayers());
