@@ -56,7 +56,7 @@ public class LobbyStage extends AbstractStage implements Listener {
         String scenariosString = enabledScenarios.isEmpty()
                 ? "<red>No scenarios!</red>"
                 : enabledScenarios.stream()
-                        .map(BaseScenario::name).map(s -> "<white> -" + s + " </white>")
+                        .map(BaseScenario::name).map(s -> "<white> - " + s + " </white>")
                         .collect(Collectors.joining("\n"));
 
         String processedBoard = LOBBY_BOARD

@@ -18,7 +18,7 @@ import us.jcedeno.deltauhc.bukkit.scenarios.annotations.Scenario;
 import us.jcedeno.deltauhc.bukkit.scenarios.models.ListenerScenario;
 
 
-@Scenario(name = "<bold><gold>HasteBoys", description = "Tools come pre-enchanted\nwith efficiency 3 and unbreaking 3.", ui = Material.DIAMOND_PICKAXE)
+@Scenario(name = "<bold><gold>HasteyBoys", description = "Tools come pre-enchanted\nwith efficiency 3 and unbreaking 3.", ui = Material.DIAMOND_PICKAXE)
 public class HasteyBoys extends ListenerScenario {
 
     public HasteyBoys(String name, String description, Material material) {
