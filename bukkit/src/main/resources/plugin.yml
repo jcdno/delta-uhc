@@ -1,6 +1,10 @@
-name: delta-uhc
-version: 1.0.0
-description: An empty example plugin for Spigot with Gradle
+name: '${name}'
+version: '${version}'
+author: '${author}'
+website: '${website}'
+description: '\nA plugin that handles Delta-UHC\n'
+
 main: us.jcedeno.deltauhc.bukkit.DeltaUHC
+
 api-version: 1.21
 depend: [VoidGen]

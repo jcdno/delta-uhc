@@ -51,6 +51,17 @@ dependencies {
     testImplementation 'com.google.code.gson:gson:2.10.1'
 }
 
+processResources {
+    def properties = [version: version, name: project.plugin_name,
+                      group  : project.group, website: project.website,
+                      author : project.author]
+    inputs.properties properties
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand properties
+    }
+}
+
 def branch() {
     def stdout = new ByteArrayOutputStream()
     exec {
