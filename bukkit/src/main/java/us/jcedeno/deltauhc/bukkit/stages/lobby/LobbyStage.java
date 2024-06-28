@@ -55,14 +55,14 @@ public class LobbyStage extends AbstractStage implements Listener {
 
         String scenariosString = enabledScenarios.isEmpty()
                 ? "<red>No scenarios!</red>"
-                : enabledScenarios.stream()
+                : "\n" + enabledScenarios.stream()
                         .map(BaseScenario::name).map(s -> "<white> - " + s + " </white>")
                         .collect(Collectors.joining("\n"));
 
         String processedBoard = LOBBY_BOARD
-                .replace("%player_count%", String.valueOf(playerCount))
+                .replaceAll("%player_count%", String.valueOf(playerCount))
                 .replace("%scenarios%", scenariosString)
-                .replace("%teamSize%", getTeamSizeString(DeltaUHC.gameConfig().getTeamSize()));
+                .replaceAll("%teamSize%", getTeamSizeString(DeltaUHC.gameConfig().getTeamSize()));
 
         return Arrays.stream(processedBoard.split("\n"))
                 .map(mini::deserialize)

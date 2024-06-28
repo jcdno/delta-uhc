@@ -28,7 +28,6 @@ public class LobbyCommands {
             return;
         }
         if (sender instanceof Player p) {
-            // TODO: Stop spam of this command, add unstuckall command
             p.sendMessage(mini.deserialize("<green>You've been unstuck!"));
             p.teleport(p.getLocation().getBlock().getRelative(BlockFace.UP).getLocation().add(0.5, 0.5, 0.5));
         }
