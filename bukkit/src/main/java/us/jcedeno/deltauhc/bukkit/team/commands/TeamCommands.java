@@ -19,13 +19,12 @@ import cloud.commandframework.annotations.specifier.Greedy;
 import lombok.extern.log4j.Log4j2;
 import us.jcedeno.deltauhc.bukkit.DeltaUHC;
 import us.jcedeno.deltauhc.bukkit.team.TeamManager;
+import us.jcedeno.deltauhc.bukkit.team.models.Team;
 
 /**
  * TODO:
- * - Add team size validation, teams cannot have more members than config.teamSize
- * - Make all accept and reject commands clickable.
- * - /invite should auto create team when not in one already.
- * - Add /tc to toggle between chat channels, if TC enabled, then all messages are on team chat by default, unless prefixed by '!'.
+ * - Add /tc to toggle between chat channels, if TC enabled, then all messages
+ * are on team chat by default, unless prefixed by '!'.
  */
 @CommandContainer
 @CommandDescription("Team commands")
@@ -52,11 +51,11 @@ public class TeamCommands {
     @CommandMethod("team create [teamName]")
     @ProxiedBy("tcreate")
     @CommandDescription("If the  sender doesn't have a team, it create it for them")
-    public void createTeam(final @NonNull Player player,
+    public Team createTeam(final @NonNull Player player,
             @Argument(value = "teamName", defaultValue = DEFAULT_TEAM_NAME) @Greedy String teamName) {
         if (!DeltaUHC.gameConfig().isTeamManagement()) {
             player.sendMessage(miniMessage().deserialize(String.format("<red>Team management is disabled!")));
-            return;
+            return null;
         }
         // If team name is actually default team name, then generate a random team name
         if (teamName.equals(DEFAULT_TEAM_NAME)) {
@@ -65,7 +64,7 @@ public class TeamCommands {
         }
         if (teamManager.hasTeam(player.getUniqueId())) {
             player.sendMessage(miniMessage().deserialize(String.format("<red>You already have a team.")));
-            return;
+            return null;
         }
         // We need to check if the player already, is they do, then we exit early.
         player.sendMessage(miniMessage()
@@ -75,6 +74,8 @@ public class TeamCommands {
 
         newTeam.setTeamName(teamName);
         newTeam.setDisplayName(teamName);
+
+        return newTeam;
     }
 
     /**
@@ -106,17 +107,23 @@ public class TeamCommands {
             sender.sendMessage(miniMessage().deserialize(String.format("<red>Team management is disabled!")));
             return;
         }
-        if (!teamManager.hasTeam(sender.getUniqueId())) {
-            sender.sendMessage(miniMessage().deserialize("<red>You don't have a team."));
-            return;
-        }
         if (teamManager.hasTeam(target.getUniqueId())) {
             sender.sendMessage(
                     miniMessage().deserialize(String.format("<red>%s already has a team.", target.getName())));
             return;
         }
+        var team = teamManager.teamByPlayer(sender.getUniqueId());
+        if (team == null) {
+            sender.sendMessage(miniMessage().deserialize("<red>You don't have a team."));
+            team = createTeam(sender, DEFAULT_TEAM_NAME);
+        }
+        if (DeltaUHC.gameConfig().getTeamSize() <= (team.getMembers().size() + 1)) {
+            sender.sendMessage(miniMessage().deserialize("<red>You can't have more than <white>"
+                    + DeltaUHC.gameConfig().getTeamSize() + "</white> members in your team!"));
+            return;
+        }
 
-        teamManager.sendTeamInvite(sender, target.getPlayer(), teamManager.teamByPlayer(sender.getUniqueId()));
+        teamManager.sendTeamInvite(sender, target.getPlayer(), team);
     }
 
     @CommandMethod("team accept <inviter>")
@@ -132,11 +139,19 @@ public class TeamCommands {
             sender.sendMessage(miniMessage().deserialize("<red>You already have a team."));
             return;
         }
-        if (!teamManager.hasTeam(inviter.getUniqueId())) {
+
+        var inviterTeam = teamManager.teamByPlayer(inviter.getUniqueId());
+        if (inviterTeam == null) {
             sender.sendMessage(
                     miniMessage().deserialize(String.format("<red>%s doesn't have a team.", inviter.getName())));
             return;
         }
+        if (DeltaUHC.gameConfig().getTeamSize() <= (inviterTeam.getMembers().size() + 1)) {
+            sender.sendMessage(miniMessage().deserialize(
+                    "<red>Team is full <white>(" + DeltaUHC.gameConfig().getTeamSize() + " players!)</white>."));
+            return;
+        }
+
         teamManager.acceptTeamInvite(sender, inviter);
     }
 

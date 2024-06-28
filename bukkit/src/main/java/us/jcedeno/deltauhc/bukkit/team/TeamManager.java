@@ -178,6 +178,8 @@ public class TeamManager {
         removeTeam(team.getTeamId());
     }
 
+    private static final String TEAM_INVITE_MSG = "<white>You have been invited to join <yello>%sender%</yellow>'s team <gold>%team%</gold>.\nType <hover:show_text:'Click to accept invite!'><click:run_command:'/team accept %sender%'><green>/team accept %sender% </green></click></hover>to accept the invite or <hover:show_text:'Click to reject invite!'><click:run_command:'/team reject %sender%'><red>/team reject %sender%</red></click></hover> to reject it.</white>";
+
     /**
      * Team Invite logic starts here
      */
@@ -216,13 +218,7 @@ public class TeamManager {
                 .deserialize("<white>You have invited <green>" + target.getName() + "<white> to join your team."));
         // Send the invite
         invites.put(target.getUniqueId(), TeamInvite.forTeam(team));
-        target.sendMessage(miniMessage().deserialize("<white>You have been invited to join <green>" + team.getTeamName()
-                + "<white> by <green>" + sender.getName() + "<white>."));
-        target.sendMessage(miniMessage()
-                .deserialize("<hover:show_text:'<green>Click to accept team invite!'><click:run_command:/team accept "
-                        + sender.getName() + "><white>Type <green>/team accept" + sender.getName() + "</click></hover>"
-                        + "<white> to accept the invite or <red>/team reject " + sender.getName()
-                        + "<white> to reject it."));
+        target.sendMessage(miniMessage().deserialize(TEAM_INVITE_MSG.replaceAll("%sender%", sender.getName()).replaceAll("%team%", team.getTeamName()) ));
     }
 
     /**
