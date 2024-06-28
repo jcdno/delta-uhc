@@ -4,6 +4,7 @@ import static net.kyori.adventure.text.minimessage.MiniMessage.miniMessage;
 
 import java.util.UUID;
 
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -46,6 +47,23 @@ public class TeamCommands {
         teamManager.teams().forEach(team -> {
             sender.sendMessage(miniMessage().deserialize(String.format("<white>%s</white>", team.getTeamName())));
         });
+    }
+
+    @CommandMethod("sendcoordinates")
+    @ProxiedBy("sendcoords|sc")
+    @CommandDescription("Sends coordinates to your team mates.")
+    public void sendCoords(final Player player) {
+        Team team = teamManager.teamByPlayer(player.getUniqueId());
+
+        if (team == null) {
+            player.sendMessage(miniMessage().deserialize("<red>You don't have a team."));
+            return;
+        }
+        Location location = player.getLocation();
+
+        teamManager.sendTeamMessage(player,
+                String.format("x: %.2f, y: %.2f, z: %.2f", location.getX(), location.getY(), location.getZ()));
+
     }
 
     @CommandMethod("team create [teamName]")

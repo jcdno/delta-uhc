@@ -22,7 +22,7 @@ public class GameConfig {
     int healTime = 30;
 
     int teamSize = 1;
-    boolean teamManagement = true;
+    boolean teamManagement = false;
 
     volatile boolean pvp = false;
     volatile int currentGameTime = -1;

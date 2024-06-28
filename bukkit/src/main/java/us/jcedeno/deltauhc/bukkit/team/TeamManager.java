@@ -178,7 +178,7 @@ public class TeamManager {
         removeTeam(team.getTeamId());
     }
 
-    private static final String TEAM_INVITE_MSG = "<white>You have been invited to join <yello>%sender%</yellow>'s team <gold>%team%</gold>.\nType <hover:show_text:'Click to accept invite!'><click:run_command:'/team accept %sender%'><green>/team accept %sender% </green></click></hover>to accept the invite or <hover:show_text:'Click to reject invite!'><click:run_command:'/team reject %sender%'><red>/team reject %sender%</red></click></hover> to reject it.</white>";
+    private static final String TEAM_INVITE_MSG = "\n<white>You have been invited to join <yellow>%sender%</yellow>'s team <gold>%team%</gold>.\nType <hover:show_text:'Click to accept invite!'><click:run_command:'/team accept %sender%'><green>/team accept </green></click></hover>to accept the invite or <hover:show_text:'Click to reject invite!'><click:run_command:'/team reject %sender%'><red>/team reject</red></click></hover> to reject it.</white>\n";
 
     /**
      * Team Invite logic starts here
