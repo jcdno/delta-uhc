@@ -18,6 +18,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import us.jcedeno.deltauhc.bukkit.DeltaUHC;
@@ -36,7 +37,7 @@ public class LobbyStage extends AbstractStage implements Listener {
     private Integer taskId;
     private static String LOBBY_BOARD = """
             <#f6edd8>Online: <#cc1a40>%player_count%
-            
+
             <#f6edd8>Team: <#cc1a40>%teamSize%
             %scenarios%
 
@@ -49,13 +50,14 @@ public class LobbyStage extends AbstractStage implements Listener {
      */
     private static List<Component> getProcessedLines() {
         int playerCount = Bukkit.getOnlinePlayers().size();
-        List<String> enabledScenarios = DeltaUHC.getGame().getScenarioManager().enabledScenarios().stream()
-                .map(BaseScenario::name)
-                .toList();
-        //TODO: Fix scenarios string not using multiple lines?
+
+        List<BaseScenario> enabledScenarios = DeltaUHC.getGame().getScenarioManager().enabledScenarios();
+
         String scenariosString = enabledScenarios.isEmpty()
-                ? "<red>No Scenarios</red>"
-                : String.join("\n", "<white> - " + enabledScenarios + "</white>");
+                ? "<red>No scenarios!</red>"
+                : enabledScenarios.stream()
+                        .map(BaseScenario::name).map(s -> "<white> -" + s + " </white>")
+                        .collect(Collectors.joining("\n"));
 
         String processedBoard = LOBBY_BOARD
                 .replace("%player_count%", String.valueOf(playerCount))
@@ -135,9 +137,12 @@ public class LobbyStage extends AbstractStage implements Listener {
      */
     public void registerTasks() {
         /**
-         * TODO: Introduce "Loopable stage", an interface that stages can implement to define a common "stage loop".
-         * This loop is a Task, in this case BukkitTask, that runs undefinitely until the stage is unregistered.
-         * The loop will take in as input whether it is async or not, the period, and the initialDelay.
+         * TODO: Introduce "Loopable stage", an interface that stages can implement to
+         * define a common "stage loop".
+         * This loop is a Task, in this case BukkitTask, that runs undefinitely until
+         * the stage is unregistered.
+         * The loop will take in as input whether it is async or not, the period, and
+         * the initialDelay.
          */
         BukkitTask runTaskTimer = Bukkit.getScheduler().runTaskTimer(DeltaUHC.getGame(), () -> {
             var sp = DeltaUHC.gameConfig().getStartPlayers();
