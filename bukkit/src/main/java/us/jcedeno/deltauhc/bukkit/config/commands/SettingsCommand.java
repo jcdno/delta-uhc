@@ -77,7 +77,50 @@ public class SettingsCommand {
                 })
                 .collect(Collectors.joining());
 
-        sender.sendMessage(miniMessage().deserialize("\n<gold><bold>Current Game Config:</bold>" + "\n\n"+ settingsSerialized));
+        sender.sendMessage(
+                miniMessage().deserialize("\n<gold><bold>Current Game Config:</bold>" + "\n\n" + settingsSerialized));
+
+    }
+
+    @CommandMethod("secret-config")
+    @CommandPermission("uhc.settings.secret")
+    @ProxiedBy("config-secret")
+    public void secretSettings(CommandSender sender) {
+
+        var config = DeltaUHC.gameConfig();
+        var clazz = config.getClass();
+
+        String settingsSerialized = Stream.of(clazz.getDeclaredFields())
+                .sorted(Comparator.comparing(Field::getName))
+                .map(f -> {
+                    var name = f.getName();
+                    var type = f.getType();
+                    var prefix = type == boolean.class || type == Boolean.class ? "is" : "get";
+                    var methodName = prefix + name.substring(0, 1).toUpperCase() + name.substring(1);
+
+                    try {
+                        var method = clazz.getDeclaredMethod(methodName);
+                        var getterResponse = method.invoke(config);
+
+                        var displayName = separateCamelCase(name);
+                        var actualDisplayName = displayName.substring(0, 1).toUpperCase() + displayName.substring(1);
+
+                        if ((name.toLowerCase().endsWith("time") || name.toLowerCase().endsWith("duration"))
+                                && (type == int.class || type == Integer.class)) {
+                            String formattedTime = StringUtils.formatTime((int) getterResponse);
+                            return "<green>" + actualDisplayName + ": <white>" + formattedTime + "\n";
+                        } else {
+                            return "<green>" + actualDisplayName + ": <white>" + getterResponse + "\n";
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return "<red>Error retrieving setting for " + name + "</red>\n";
+                    }
+                })
+                .collect(Collectors.joining());
+
+        sender.sendMessage(miniMessage()
+                .deserialize("<gold><bold><rainbow>SECRET</rainbow> Settings:</bold>" + "\n\n" + settingsSerialized));
 
     }
 

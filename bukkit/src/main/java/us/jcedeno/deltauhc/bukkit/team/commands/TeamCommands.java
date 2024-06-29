@@ -14,9 +14,11 @@ import cloud.commandframework.annotations.AnnotationParser;
 import cloud.commandframework.annotations.Argument;
 import cloud.commandframework.annotations.CommandDescription;
 import cloud.commandframework.annotations.CommandMethod;
+import cloud.commandframework.annotations.CommandPermission;
 import cloud.commandframework.annotations.ProxiedBy;
 import cloud.commandframework.annotations.processing.CommandContainer;
 import cloud.commandframework.annotations.specifier.Greedy;
+import cloud.commandframework.annotations.specifier.Liberal;
 import lombok.extern.log4j.Log4j2;
 import us.jcedeno.deltauhc.bukkit.DeltaUHC;
 import us.jcedeno.deltauhc.bukkit.team.TeamManager;
@@ -49,8 +51,24 @@ public class TeamCommands {
         });
     }
 
-    @CommandMethod("sendcoordinates")
-    @ProxiedBy("sendcoords|sc")
+    @CommandMethod("team management|man <bool>")
+    @ProxiedBy("management")
+    @CommandPermission("uhc.teams.management")
+    public void toggleTeamManagement(final CommandSender sender, @Liberal @Argument(value = "bool") Boolean bool) {
+        DeltaUHC.gameConfig().setTeamManagement(bool);
+        sender.sendMessage(miniMessage().deserialize("<white>You have set team mangement to <green>" + bool));
+    }
+
+    @CommandMethod("team size <number>")
+    @ProxiedBy("teamsize")
+    @CommandPermission("uhc.teams.management")
+    public void changeTeamSize(final CommandSender sender, @Argument(value = "number") Integer number) {
+        DeltaUHC.gameConfig().setTeamSize(number);
+        sender.sendMessage(miniMessage().deserialize("<white>You have set team size to <green>" + number));
+    }
+
+    @CommandMethod("sendcoords")
+    @ProxiedBy("sc")
     @CommandDescription("Sends coordinates to your team mates.")
     public void sendCoords(final Player player) {
         Team team = teamManager.teamByPlayer(player.getUniqueId());
@@ -67,7 +85,7 @@ public class TeamCommands {
     }
 
     @CommandMethod("team create [teamName]")
-    @ProxiedBy("tcreate")
+    @ProxiedBy("create")
     @CommandDescription("If the  sender doesn't have a team, it create it for them")
     public Team createTeam(final @NonNull Player player,
             @Argument(value = "teamName", defaultValue = DEFAULT_TEAM_NAME) @Greedy String teamName) {
@@ -173,7 +191,7 @@ public class TeamCommands {
         teamManager.acceptTeamInvite(sender, inviter);
     }
 
-    @CommandMethod("team deny <inviter>")
+    @CommandMethod("team deny|reject <inviter>")
     @ProxiedBy("reject")
     @CommandDescription("Denies a team invite.")
     public void teamDenyCommand(final Player sender, final @Argument("inviter") Player inviter) {
