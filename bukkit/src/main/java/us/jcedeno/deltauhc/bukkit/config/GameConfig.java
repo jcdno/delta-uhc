@@ -29,6 +29,8 @@ public class GameConfig {
     int teamSize = 1;
     @IgnoreSetting
     boolean teamManagement = false;
+    @IgnoreSetting
+    boolean nether = false;
 
     @IgnoreSetting
     volatile boolean pvp = false;

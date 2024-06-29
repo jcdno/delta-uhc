@@ -8,6 +8,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.EntityType;
@@ -16,6 +17,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -114,6 +116,16 @@ public class InGameStage extends AbstractStage implements Listener {
         e.getPlayer().setGameMode(GameMode.SPECTATOR);
 
         DeltaUHC.gameConfig().getPlayersAlive().removeIf(c -> e.getPlayer().getUniqueId().compareTo(c) == 0);
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent e) {
+        var p = e.getPlayer();
+
+        if (!DeltaUHC.gameConfig().getPlayersAlive().contains(p.getUniqueId())) {
+            p.teleport(Locations.getGameWorld().getSpawnLocation());
+            p.setGameMode(GameMode.SPECTATOR);
+        }
     }
 
 }

@@ -143,6 +143,7 @@ public class SettingsCommand {
 
             Object parsedValue = parseValue(f.getType(), value);
             if (parsedValue != null) {
+                
                 var method = GameConfig.class.getDeclaredMethod(
                         "set" + f.getName().substring(0, 1).toUpperCase() + f.getName().substring(1), f.getType());
 
