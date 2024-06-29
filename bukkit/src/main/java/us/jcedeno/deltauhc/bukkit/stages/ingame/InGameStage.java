@@ -144,17 +144,13 @@ public class InGameStage extends AbstractStage implements Listener {
                 Bukkit.broadcast(mini.deserialize("<#DC14A0>[⚔] PVP has been enabled."));
             }
 
-            var currentBorder = Locations.getGameWorld().getWorldBorder().getSize() / 2;
-            var alive = DeltaUHC.gameConfig().getPlayersAlive().size();
-            var initial = DeltaUHC.gameConfig().getInitialPlayers();
-
             int timeUntilHeal = getTimeUntilEvent(time, cfg.getHealTime());
             int timeUntilPvP = getTimeUntilEvent(time, cfg.getPvpTime());
             int timeUntilShrink = getTimeUntilEvent(time, cfg.getShrinkStartTime());
 
             int timeUntilNextEvent = Math.min(Math.min(timeUntilHeal, timeUntilPvP), timeUntilShrink);
 
-            String nextEventName = "None";
+            String nextEventName = null;
             if (timeUntilNextEvent == timeUntilHeal) {
                 nextEventName = "Final Heal";
             } else if (timeUntilNextEvent == timeUntilPvP) {
@@ -177,8 +173,11 @@ public class InGameStage extends AbstractStage implements Listener {
                                 p.setGameMode(GameMode.SURVIVAL);
                             });
                 }
-                p.sendActionBar(
-                        mini.deserialize(actualEvent + ": <green>" + formatTime(timeUntilNextEvent)));
+                if (actualEvent != null) {
+                    p.sendActionBar(
+                            mini.deserialize(actualEvent + ": <green>" + formatTime(timeUntilNextEvent)));
+                }
+
                 DeltaUHC.getGame().getBoard(p).updateLines(getProcessedLines());
             });
         }, 20 * 5, 20);
@@ -205,12 +204,18 @@ public class InGameStage extends AbstractStage implements Listener {
     public void unregisterTasks() {
 
     }
+
     /**
-     * TODO: Properly implement the teleport as a STAGE and let that stage tell the game when to actually start.
+     * TODO: Properly implement the teleport as a STAGE and let that stage tell the
+     * game when to actually start.
      * 
-     * Calculate all the locations needed for teleport, substracting all the locations for each team member, + 1, and preload the chunks and keep them loaded until everyone has been teleported.
-     * Teleport players in chunks a x amounts of locations are fully preloaded and have them wait until everyone else teleports.
-     * Once everyone is teleported, heal, clear inventory, set gamemode, etc etc, then unregister current stage and register InGamestage.
+     * Calculate all the locations needed for teleport, substracting all the
+     * locations for each team member, + 1, and preload the chunks and keep them
+     * loaded until everyone has been teleported.
+     * Teleport players in chunks a x amounts of locations are fully preloaded and
+     * have them wait until everyone else teleports.
+     * Once everyone is teleported, heal, clear inventory, set gamemode, etc etc,
+     * then unregister current stage and register InGamestage.
      */
 
     public void startTeleport() {
