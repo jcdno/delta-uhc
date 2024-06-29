@@ -110,18 +110,6 @@ public class SudoScenarioCommands {
         log.debug("At this point, cloud injects the command.");
     }
 
-    /**
-     * TODO: Use this pattern to create command /settings:config:cfg <settingName> <settingValue>
-     * where each setting autocompletes depending settings and takes the following parameter depending on the type of the setting name. i.e.:
-     * 
-     * - /settings pvpTime <Integer>
-     * - /settings pvp <Boolean>
-     * - /settings teamSize <Integer>
-     * - /settings teamManagement <Boolean>
-     * - /settings playersAlive add/remove <String:UUID>
-     * 
-     * The logic should look at all the fields of the config object and use them as reference for the @Suggestions.
-     */
 
 
     /**
