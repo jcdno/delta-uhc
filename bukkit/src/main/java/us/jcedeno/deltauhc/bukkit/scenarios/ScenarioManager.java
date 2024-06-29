@@ -43,7 +43,6 @@ public class ScenarioManager {
      * by creating a class under the scenarios/impl folder that extends BaseScenario
      * and annotating it with @Scenario.
      * 
-     * TODO: Refactor this clusterf of a method
      */
     public void autoRegisterScenarios() {
         ClassUtils.findAnnotatedClasses(this.getClass().getPackageName() + ".impl", Scenario.class).stream()
