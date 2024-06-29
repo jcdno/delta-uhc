@@ -40,7 +40,7 @@ public class LobbyCommands {
         }
         // Register the ingame task
         sender.sendMessage("Starting the game...");
-        DeltaUHC.getGame().getInGameStage().registerTasks();
+        DeltaUHC.getGame().getStartingStage().registerTasks();
 
     }
 

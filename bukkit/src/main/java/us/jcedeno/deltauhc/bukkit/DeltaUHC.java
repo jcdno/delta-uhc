@@ -28,6 +28,7 @@ import us.jcedeno.deltauhc.bukkit.scenarios.ScenarioManager;
 import us.jcedeno.deltauhc.bukkit.stages.global.GlobalStage;
 import us.jcedeno.deltauhc.bukkit.stages.ingame.InGameStage;
 import us.jcedeno.deltauhc.bukkit.stages.lobby.LobbyStage;
+import us.jcedeno.deltauhc.bukkit.stages.starting.StartingStage;
 import us.jcedeno.deltauhc.bukkit.team.TeamManager;
 
 /**
@@ -42,6 +43,8 @@ public class DeltaUHC extends JavaPlugin {
     private final InGameStage inGameStage = new InGameStage();
     @Getter
     private final GlobalStage globalStage = new GlobalStage();
+    @Getter
+    private final StartingStage startingStage = new StartingStage();
     @Getter
     private final GameConfig gameConfig = new GameConfig();
     @Getter
