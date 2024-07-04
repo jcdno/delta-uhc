@@ -3,6 +3,7 @@ package us.jcedeno.deltauhc.bukkit.team;
 import static net.kyori.adventure.text.minimessage.MiniMessage.miniMessage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -89,6 +90,30 @@ public class TeamManager {
     }
 
     /**
+     * Returns a map of team names to lists of players in each team.
+     *
+     * @return Map<String, List<Player>> where key is team name and value is list of
+     *         players in the team
+     */
+    public Map<String, List<Player>> getPlayersByTeam() {
+        Map<String, List<Player>> playersByTeam = new HashMap<>();
+
+        // Group players by their team
+        for (Team team : teams.values()) {
+            List<Player> playersInTeam = new ArrayList<>();
+            for (UUID playerId : team.getMembers()) {
+                Player player = Bukkit.getPlayer(playerId);
+                if (player != null) {
+                    playersInTeam.add(player);
+                }
+            }
+            playersByTeam.put(team.getTeamId().toString(), playersInTeam);
+        }
+
+        return playersByTeam;
+    }
+
+    /**
      * A function that takes a valid OfflinePlayer and creates a team with the
      * player as the leader.
      * 
@@ -110,6 +135,18 @@ public class TeamManager {
      */
     public Team teamByPlayer(UUID playerId) {
         return playerTeamLookup.get(playerId);
+    }
+
+    /**
+     * A function that takes a valid OfflinePlayer and creates a team with the
+     * player as the leader.
+     * 
+     * @param leader The leader of the team.
+     * 
+     * @return The team that was created.
+     */
+    public Team teamByPlayer(Player player) {
+        return teamByPlayer(player.getUniqueId());
     }
 
     /**
@@ -218,7 +255,8 @@ public class TeamManager {
                 .deserialize("<white>You have invited <green>" + target.getName() + "<white> to join your team."));
         // Send the invite
         invites.put(target.getUniqueId(), TeamInvite.forTeam(team));
-        target.sendMessage(miniMessage().deserialize(TEAM_INVITE_MSG.replaceAll("%sender%", sender.getName()).replaceAll("%team%", team.getTeamName()) ));
+        target.sendMessage(miniMessage().deserialize(
+                TEAM_INVITE_MSG.replaceAll("%sender%", sender.getName()).replaceAll("%team%", team.getTeamName())));
     }
 
     /**

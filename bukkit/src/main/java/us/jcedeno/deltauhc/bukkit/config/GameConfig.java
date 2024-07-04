@@ -31,6 +31,10 @@ public class GameConfig {
     boolean teamManagement = false;
     @IgnoreSetting
     boolean nether = false;
+    @IgnoreSetting
+    boolean end = false;
+    @IgnoreSetting
+    int borderDistanceWarning = 75;
 
     @IgnoreSetting
     volatile boolean pvp = false;
