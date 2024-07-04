@@ -28,6 +28,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 
 import us.jcedeno.deltauhc.bukkit.DeltaUHC;
@@ -166,6 +167,21 @@ public class StartingStage extends AbstractStage implements Listener {
                 if (event.getExited() instanceof Player exitedPlayer
                         && exitedPlayer.getUniqueId().equals(player.getUniqueId())) {
                     entity.remove();
+                    HandlerList.unregisterAll(this);
+                }
+            }
+
+            @EventHandler
+            public void cancelDamage(EntityDamageEvent e) {
+                if (e.getEntity() instanceof Player p
+                        && p.getUniqueId().compareTo(player.getUniqueId()) == 0) {
+                    e.setCancelled(true);
+                }
+            }
+
+            @EventHandler
+            public void cancelDamage(PlayerQuitEvent e) {
+                if (player.getUniqueId().compareTo(e.getPlayer().getUniqueId()) == 0) {
                     HandlerList.unregisterAll(this);
                 }
             }
