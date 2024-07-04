@@ -21,6 +21,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import us.jcedeno.deltauhc.bukkit.DeltaUHC;
 import us.jcedeno.deltauhc.bukkit.config.GameConfig;
+import us.jcedeno.deltauhc.bukkit.locations.Locations;
 import us.jcedeno.deltauhc.bukkit.stages.ingame.InGameStage;
 import us.jcedeno.deltauhc.bukkit.team.models.Team;
 
@@ -63,18 +64,21 @@ public class GameLoop implements Runnable {
                 cfg.setEnd(false);
                 isBorderShrinking = false;
 
-                World overworld = Bukkit.getWorld("world"); // Replace with your Overworld name
+                World overworld = Locations.getGameWorld();
                 double radiusFinalSize = cfg.getRadiusFinalSize();
-                Map<String, List<Player>> playersByTeam = DeltaUHC.getGame().getTeamManager().getPlayersByTeam(); // Replace with actual method to get teams
-
+                Map<String, List<Player>> playersByTeam = DeltaUHC.getGame().getTeamManager().getPlayersByTeam();
                 Bukkit.getOnlinePlayers().stream()
-                        .filter(p -> p.getWorld().getEnvironment() == World.Environment.NETHER || p.getWorld().getEnvironment() == World.Environment.THE_END)
-                        .collect(Collectors.groupingBy(DeltaUHC.getGame().getTeamManager()::teamByPlayer, Collectors.toList()))
+                        .filter(p -> p.getWorld().getEnvironment() == World.Environment.NETHER
+                                || p.getWorld().getEnvironment() == World.Environment.THE_END)
+                        .collect(Collectors.groupingBy(DeltaUHC.getGame().getTeamManager()::teamByPlayer,
+                                Collectors.toList()))
                         .forEach((team, players) -> {
-                            Location teleportLocation = findSafeLocationForTeam(overworld, radiusFinalSize, team, playersByTeam);
+                            Location teleportLocation = findSafeLocationForTeam(overworld, radiusFinalSize, team,
+                                    playersByTeam);
                             players.forEach(p -> {
                                 p.teleport(teleportLocation);
-                                p.sendMessage(mini.deserialize("<yellow>You have been teleported to the overworld because the border has shrunk.</yellow>"));
+                                p.sendMessage(mini.deserialize(
+                                        "<yellow>You have been teleported to the overworld because the border has shrunk.</yellow>"));
                             });
                         });
             }, cfg.getShrinkDuration() * 20); // Convert seconds to ticks
@@ -112,21 +116,32 @@ public class GameLoop implements Runnable {
             }
         }
 
-        final Component nextEvent = nextEventName == null ? mini.deserialize("") : mini.deserialize(nextEventName + ": <green>" + formatTime(timeUntilNextEvent));
+        final Component nextEvent = nextEventName == null ? null
+                : mini.deserialize(nextEventName + ": <green>" + formatTime(timeUntilNextEvent));
 
         // Check if the player is close to the border
         double borderDistanceWarning = cfg.getBorderDistanceWarning();
 
         Bukkit.getOnlinePlayers().forEach(p -> {
-            WorldBorder border = p.getWorld().getWorldBorder();
-            double borderSize = border.getSize() / 2;
-            double distanceToBorder = Math.min(
-                    Math.min(Math.abs(p.getLocation().getX() - border.getCenter().getX()), borderSize - Math.abs(p.getLocation().getX() - border.getCenter().getX())),
-                    Math.min(Math.abs(p.getLocation().getZ() - border.getCenter().getZ()), borderSize - Math.abs(p.getLocation().getZ() - border.getCenter().getZ()))
-            );
+            if (isBorderShrinking) {
+                WorldBorder border = p.getWorld().getWorldBorder();
+                double borderSize = border.getSize() / 2;
+                double distanceToBorder = Math.min(
+                        Math.min(Math.abs(p.getLocation().getX() - border.getCenter().getX()),
+                                borderSize - Math.abs(p.getLocation().getX() - border.getCenter().getX())),
+                        Math.min(Math.abs(p.getLocation().getZ() - border.getCenter().getZ()),
+                                borderSize - Math.abs(p.getLocation().getZ() - border.getCenter().getZ())));
 
-            if (isBorderShrinking && distanceToBorder <= borderDistanceWarning) {
-                p.sendActionBar(mini.deserialize("<red>Warning: " + distanceToBorder + " blocks to the border!").appendNewline().append(nextEvent));
+                if (distanceToBorder <= borderDistanceWarning) {
+                    // Make the message Warning: 1.0 from border
+                    var msg = mini
+                            .deserialize("<red>Warning: <white>" + String.format("%.2f", distanceToBorder)
+                                    + "m</white> from border!</red>");
+                    if (nextEvent != null) {
+                        msg.append(mini.deserialize("<gray> - </gray>").append(nextEvent));
+                    }
+                    p.sendActionBar(msg);
+                }
             } else {
                 p.sendActionBar(nextEvent);
             }
@@ -139,7 +154,8 @@ public class GameLoop implements Runnable {
         return eventTime > currentTime ? eventTime - currentTime : Integer.MAX_VALUE;
     }
 
-    private Location findSafeLocationForTeam(World overworld, double radiusFinalSize, Team team, Map<String, List<Player>> playersByTeam) {
+    private Location findSafeLocationForTeam(World overworld, double radiusFinalSize, Team team,
+            Map<String, List<Player>> playersByTeam) {
         if (team == null) {
             return getRandomSafeLocation(overworld, radiusFinalSize);
         }
