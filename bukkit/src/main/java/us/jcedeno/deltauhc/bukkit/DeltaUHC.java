@@ -1,10 +1,16 @@
 package us.jcedeno.deltauhc.bukkit;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Properties;
 import java.util.function.Function;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.GameRule;
+import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
@@ -12,6 +18,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import cloud.commandframework.annotations.AnnotationParser;
 import cloud.commandframework.arguments.parser.ParserParameters;
@@ -23,6 +33,7 @@ import fr.mrmicky.fastboard.adventure.FastBoard;
 import fr.mrmicky.fastinv.FastInvManager;
 import lombok.Getter;
 import us.jcedeno.deltauhc.bukkit.config.GameConfig;
+import us.jcedeno.deltauhc.bukkit.locations.Locations;
 import us.jcedeno.deltauhc.bukkit.scenarios.ScenarioManager;
 import us.jcedeno.deltauhc.bukkit.stages.global.GlobalStage;
 import us.jcedeno.deltauhc.bukkit.stages.ingame.InGameStage;
@@ -36,6 +47,10 @@ import us.jcedeno.deltauhc.bukkit.team.TeamManager;
  * @author jcedeno
  */
 public class DeltaUHC extends JavaPlugin {
+    private static final String JSON_FILE_PATH = Bukkit.getWorldContainer().getAbsoluteFile().getParent()
+            + File.separator + "gamedata.json";
+    private static final String SERVER_PROPERTIES_PATH = Bukkit.getWorldContainer().getAbsoluteFile().getParent()
+            + File.separator + "server.properties";
     @Getter
     private final LobbyStage lobbyStage = new LobbyStage();
     @Getter
@@ -61,11 +76,11 @@ public class DeltaUHC extends JavaPlugin {
         return DeltaUHC.getGame().getGameConfig();
     }
 
-    public static void runSync(Runnable run){
+    public static void runSync(Runnable run) {
         Bukkit.getScheduler().runTask(game, run);
     }
 
-    public FastBoard getBoard(Player player){
+    public FastBoard getBoard(Player player) {
         return globalStage.getBoards().get(player.getUniqueId());
     }
 
@@ -102,7 +117,7 @@ public class DeltaUHC extends JavaPlugin {
                     CommandExecutionCoordinator.simpleCoordinator(),
                     Function.identity(),
                     Function.identity());
-            
+
             // TODO: Cannot register brigadier until supported by incendo
             // this.bukkitCommandManager.registerBrigadier();
         } catch (Exception e) {
@@ -119,13 +134,97 @@ public class DeltaUHC extends JavaPlugin {
 
         this.constructCommands();
 
-
-
     }
 
     @Override
     public void onDisable() {
 
+    }
+
+    @Override
+    public void onLoad() {
+        // Check if world should be destroyed
+        System.out.println("LOAD WORLD LOGIC");
+        if (shouldRecreateWorld()) {
+            String worldFolderName = getDefaultWorldName();
+            System.out.println("should recreate");
+            if (worldFolderName != null && !worldFolderName.isEmpty()) {
+                System.out.println("not null");
+                deleteWorldFolders(worldFolderName);
+                resetRecreateFlag();
+            }
+        }
+    }
+
+    private boolean shouldRecreateWorld() {
+        File jsonFile = new File(JSON_FILE_PATH);
+        System.out.println("Looking for file: " + JSON_FILE_PATH);
+        if (jsonFile.exists()) {
+            try (FileReader reader = new FileReader(jsonFile)) {
+                JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
+                return jsonObject.has("recreateWorld") && jsonObject.get("recreateWorld").getAsBoolean();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("file doesn't exist");
+        return false;
+    }
+
+    private void deleteWorldFolders(String worldFolderName) {
+        File worldFolder = new File(Bukkit.getWorldContainer(), worldFolderName);
+        deleteDirectory(worldFolder);
+
+        File worldEndFolder = new File(Bukkit.getWorldContainer(), worldFolderName + "_the_end");
+        File worldNetherFolder = new File(Bukkit.getWorldContainer(), worldFolderName + "_nether");
+
+        deleteDirectory(worldEndFolder);
+        deleteDirectory(worldNetherFolder);
+    }
+
+    private void deleteDirectory(File directory) {
+        if (directory.exists()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        deleteDirectory(file);
+                    } else {
+                        file.delete();
+                    }
+                }
+            }
+            directory.delete();
+        }
+    }
+
+    private void resetRecreateFlag() {
+        File jsonFile = new File(JSON_FILE_PATH);
+        if (jsonFile.exists()) {
+            try (FileReader reader = new FileReader(jsonFile)) {
+                JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
+                jsonObject.addProperty("recreateWorld", false);
+
+                try (FileWriter writer = new FileWriter(jsonFile)) {
+                    Gson gson = new Gson();
+                    gson.toJson(jsonObject, writer);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private String getDefaultWorldName() {
+        Properties properties = new Properties();
+        try (FileReader reader = new FileReader(SERVER_PROPERTIES_PATH)) {
+            properties.load(reader);
+            return properties.getProperty("level-name", "world");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "world";
     }
 
     /**
